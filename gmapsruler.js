@@ -1,4 +1,4 @@
-var GmapsRuler = function(domID,unit) {
+var GmapsRuler = function(domID,mapReference,unit) {
 	
 	this.vertices = [];
 	this.edges = [];
@@ -6,7 +6,8 @@ var GmapsRuler = function(domID,unit) {
 	this.unit = unit;
 	this.totalDist ='0 '+unit;
 	this.domID = domID;
-};
+	this.map = mapReference;
+}
 
 function getDistance(marker1,marker2,unit) {
 	return distance(
@@ -32,7 +33,7 @@ function distance(lat1,lon1,lat2,lon2,unit) {
     var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
     var d = R * c;
     return formatDistance(d,unit);
-};
+}
 
 function formatDistance(d,unit) {
 
@@ -40,7 +41,7 @@ function formatDistance(d,unit) {
 		return (Math.round(d*100)/100).toFixed(2);
 	else if (unit=='m'||unit=='meters')
 		return Math.round(d*1000);
-};
+}
 
 GmapsRuler.prototype.start = function() {
 		
@@ -51,13 +52,11 @@ GmapsRuler.prototype.start = function() {
 	document.getElementById(thisRuler.domID+'_records').innerHTML = '';
 	document.getElementById(thisRuler.domID+'_total').innerHTML = '<b>Total length:</b> '+thisRuler.totalDist;
 	
-	document.getElementById(thisRuler.domID+'_c').style.display = 'block';
-	
-	google.maps.event.addListener(map, 'click', function(e) {
+	google.maps.event.addListener(thisRuler.map, 'click', function(e) {
 		
 		var newVertice = new google.maps.Marker({
 			position: e.latLng,
-	        map: map,
+	        map: thisRuler.map,
 	        icon: {
 		    	path: google.maps.SymbolPath.CIRCLE,
 		   		scale: 5
@@ -75,7 +74,7 @@ GmapsRuler.prototype.start = function() {
 		    		thisRuler.vertices[thisRuler.vertices.indexOf(newVertice)-1].position,
 		    		thisRuler.vertices[thisRuler.vertices.indexOf(newVertice)].position
 		    		],
-				map: map,
+				map: thisRuler.map,
 		        strokeColor: "#FF0000",
 		        strokeOpacity: 0.7,
 		        strokeWeight: 3,
@@ -86,7 +85,7 @@ GmapsRuler.prototype.start = function() {
 			thisRuler.edges.push(newEdge);
 			thisRuler.distances.push(newEdge.len);
 			
-			document.getElementById(thisRuler.domID+'_records').innerHTML += '<div class="tool-record text-right">'+newEdge.len+'</div>';
+			document.getElementById(thisRuler.domID+'_records').innerHTML += '<div class="'+thisRuler.domID+'-record">'+newEdge.len+'</div>';
 		}
 		
 	    thisRuler.recount();
@@ -94,11 +93,11 @@ GmapsRuler.prototype.start = function() {
 	    document.getElementById(thisRuler.domID+'_total').innerHTML = '<b>Total length:</b> '+thisRuler.totalDist;
 	    
 	});
-};
+}
 
 GmapsRuler.prototype.end = function() {
 	
-	google.maps.event.clearListeners(map, 'click');
+	google.maps.event.clearListeners(this.map, 'click');
 	
 	for (i in this.vertices) {
 		this.vertices[i].setMap(null);
@@ -110,8 +109,6 @@ GmapsRuler.prototype.end = function() {
 	this.edges = [];
 	this.distances = [];
 	this.totalDist ='0 '+this.unit;
-	
-	document.getElementById(this.domID+'_c').style.display = 'block';
 }
 
 GmapsRuler.prototype.recount = function() {
@@ -124,7 +121,7 @@ GmapsRuler.prototype.recount = function() {
 	
 	for (i in this.distances) {
 		
-		document.getElementById(thisRuler.domID+'_records').innerHTML += '<div class="tool-record text-right">'+this.distances[i]+'</div>';
+		document.getElementById(thisRuler.domID+'_records').innerHTML += '<div class="'+thisRuler.domID+'-record">'+this.distances[i]+'</div>';
 		var thisDist;
 		thisDist=parseFloat(this.distances[i]);
 		total = total+thisDist;
@@ -223,4 +220,4 @@ GmapsRuler.prototype.recount = function() {
 		}) (i,thisVertice);
 		
 	}
-};
+}
